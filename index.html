@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ricky Cloud</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f4f7fb;
+      color: #222;
+    }
+
+    header {
+      background: #1769e0;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    h1, h2 {
+      margin-top: 0;
+    }
+
+    input[type="file"] {
+      margin: 15px 0;
+    }
+
+    button {
+      background: #1769e0;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0d4fa8;
+    }
+
+    #fileList {
+      margin-top: 20px;
+    }
+
+    .file {
+      padding: 15px;
+      border-bottom: 1px solid #ddd;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>☁️ Ricky Cloud</h1>
+    <p>Penyimpanan Arsip & Dokumen Digital</p>
+  </header>
+
+  <div class="container">
+
+    <div class="card">
+      <h2>📤 Upload Dokumen</h2>
+
+      <input type="file" id="fileInput">
+
+      <br>
+
+      <button onclick="uploadFile()">Upload</button>
+    </div>
+
+    <div class="card">
+      <h2>📁 Daftar Dokumen</h2>
+
+      <div id="fileList">
+        Belum ada dokumen.
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function uploadFile() {
+      const input = document.getElementById("fileInput");
+      const fileList = document.getElementById("fileList");
+
+      if (input.files.length === 0) {
+        alert("Silakan pilih file terlebih dahulu.");
+        return;
+      }
+
+      const file = input.files[0];
+
+      const ukuran = (file.size / 1024).toFixed(2);
+
+      fileList.innerHTML = `
+        <div class="file">
+          📄 <strong>${file.name}</strong><br>
+          Ukuran: ${ukuran} KB
+        </div>
+      `;
+
+      alert("File berhasil dipilih!");
+    }
+  </script>
+
+</body>
+</html>
