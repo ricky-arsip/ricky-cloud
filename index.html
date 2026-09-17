@@ -1,104 +1,90 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ricky Cloud - Arsip Dokumen</title>
 
-<title>Ricky Cloud</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<style>
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  background: #f4f7fb;
-  color: #222;
-}
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f4f7fb;
+      color: #222;
+    }
 
-header {
-  background: #1769e0;
-  color: white;
-  padding: 25px;
-  text-align: center;
-}
+    header {
+      background: #2563eb;
+      color: white;
+      padding: 22px;
+      text-align: center;
+    }
 
-.container {
-  max-width: 950px;
-  margin: 30px auto;
-  padding: 20px;
-}
+    .container {
+      max-width: 900px;
+      margin: 25px auto;
+      padding: 0 15px;
+    }
 
-.card {
-  background: white;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
-}
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    }
 
-input[type="file"] {
-  margin: 15px 0;
-}
+    input, select, textarea, button {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 11px;
+      margin-top: 8px;
+      margin-bottom: 14px;
+      border: 1px solid #ccc;
+      border-radius: 7px;
+      font-size: 15px;
+    }
 
-button {
-  background: #1769e0;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  margin: 5px;
-}
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
 
-button:hover {
-  background: #0d4fa8;
-}
+    button:hover {
+      background: #1d4ed8;
+    }
 
-.file {
-  padding: 18px;
-  border-bottom: 1px solid #ddd;
-}
+    .dokumen {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-top: 12px;
+      border-radius: 8px;
+    }
 
-.file-name {
-  font-size: 18px;
-  font-weight: bold;
-}
+    .dokumen a {
+      display: inline-block;
+      margin-top: 8px;
+      color: #2563eb;
+      font-weight: bold;
+      text-decoration: none;
+    }
 
-.preview {
-  margin-top: 20px;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  background: #fafafa;
-}
-
-.preview img {
-  max-width: 100%;
-  max-height: 600px;
-}
-
-.preview iframe {
-  width: 100%;
-  height: 600px;
-  border: none;
-}
-
-.download {
-  display: inline-block;
-  background: #198754;
-  color: white;
-  padding: 10px 15px;
-  border-radius: 7px;
-  text-decoration: none;
-  margin-top: 10px;
-}
-</style>
+    #status {
+      font-weight: bold;
+    }
+  </style>
 </head>
 
 <body>
 
 <header>
   <h1>☁️ Ricky Cloud</h1>
-  <p>Penyimpanan Arsip & Dokumen Digital</p>
+  <p>Penyimpanan Arsip Dokumen</p>
 </header>
 
 <div class="container">
@@ -106,210 +92,55 @@ button:hover {
   <div class="card">
     <h2>📤 Upload Dokumen</h2>
 
-    <input type="file" id="fileInput"
-      accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif">
+    <label>Nama Dokumen</label>
+    <input id="nama" type="text" placeholder="Contoh: Surat Masuk 001">
 
-    <br>
+    <label>Kategori</label>
+    <select id="kategori">
+      <option value="">Pilih kategori</option>
+      <option>Surat Masuk</option>
+      <option>Surat Keluar</option>
+      <option>Surat Tugas</option>
+      <option>Laporan</option>
+      <option>Lainnya</option>
+    </select>
 
-    <button onclick="uploadFile()">Upload Dokumen</button>
+    <label>Deskripsi</label>
+    <textarea id="deskripsi" placeholder="Keterangan dokumen"></textarea>
+
+    <label>Pilih File</label>
+    <input id="file" type="file"
+      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+
+    <button onclick="uploadDokumen()">⬆️ Upload Dokumen</button>
+
+    <div id="status"></div>
   </div>
 
   <div class="card">
-    <h2>📁 Daftar Dokumen</h2>
+    <h2>📚 Daftar Arsip</h2>
 
-    <div id="fileList">
-      Belum ada dokumen.
-    </div>
-  </div>
+    <input id="search"
+      type="text"
+      placeholder="🔎 Cari dokumen..."
+      oninput="tampilkanDokumen()">
 
-  <div class="card" id="previewCard" style="display:none;">
-
-    <h2>👁️ Tampilan Dokumen</h2>
-
-    <div id="preview" class="preview"></div>
-
+    <div id="daftar"></div>
   </div>
 
 </div>
 
 <script>
 
-let dokumen = [];
+  // =========================
+  // KONFIGURASI SUPABASE
+  // =========================
 
-function uploadFile() {
+  const SUPABASE_URL =
+    "https://cmbouwymtdpdtdjrepqo.supabase.co";
 
-  const input = document.getElementById("fileInput");
+  const SUPABASE_KEY =
+    "sb_publishable_....";
 
-  if (input.files.length === 0) {
-    alert("Silakan pilih file terlebih dahulu.");
-    return;
-  }
-
-  const file = input.files[0];
-
-  dokumen.push(file);
-
-  tampilkanDaftar();
-
-  bukaDokumen(file);
-
-  alert("Dokumen berhasil ditambahkan!");
-}
-
-
-function tampilkanDaftar() {
-
-  const fileList = document.getElementById("fileList");
-
-  fileList.innerHTML = "";
-
-  dokumen.forEach((file, index) => {
-
-    const ukuran = (file.size / 1024).toFixed(2);
-
-    fileList.innerHTML += `
-
-      <div class="file">
-
-        <div class="file-name">
-          📄 ${file.name}
-        </div>
-
-        <div>
-          Ukuran: ${ukuran} KB
-        </div>
-
-        <button onclick="bukaDokumen(dokumen[${index}])">
-          👁️ Buka
-        </button>
-
-        <button onclick="downloadFile(dokumen[${index}])">
-          ⬇️ Download
-        </button>
-
-      </div>
-
-    `;
-  });
-}
-
-
-function bukaDokumen(file) {
-
-  const previewCard = document.getElementById("previewCard");
-  const preview = document.getElementById("preview");
-
-  previewCard.style.display = "block";
-
-  preview.innerHTML = "";
-
-  const url = URL.createObjectURL(file);
-
-  const nama = file.name.toLowerCase();
-
-
-  // GAMBAR
-  if (
-    nama.endsWith(".jpg") ||
-    nama.endsWith(".jpeg") ||
-    nama.endsWith(".png") ||
-    nama.endsWith(".gif")
-  ) {
-
-    preview.innerHTML = `
-      <h3>🖼️ Gambar</h3>
-      <img src="${url}">
-    `;
-
-    return;
-  }
-
-
-  // PDF
-  if (nama.endsWith(".pdf")) {
-
-    preview.innerHTML = `
-      <h3>📕 PDF</h3>
-      <iframe src="${url}"></iframe>
-    `;
-
-    return;
-  }
-
-
-  // WORD
-  if (
-    nama.endsWith(".doc") ||
-    nama.endsWith(".docx")
-  ) {
-
-    preview.innerHTML = `
-      <h3>📝 Dokumen Word</h3>
-
-      <p>
-        File Word siap dibuka.
-      </p>
-
-      <a class="download"
-         href="${url}"
-         download="${file.name}">
-         ⬇️ Download & Buka Word
-      </a>
-    `;
-
-    return;
-  }
-
-
-  // EXCEL
-  if (
-    nama.endsWith(".xls") ||
-    nama.endsWith(".xlsx")
-  ) {
-
-    preview.innerHTML = `
-      <h3>📊 Dokumen Excel</h3>
-
-      <p>
-        File Excel siap dibuka.
-      </p>
-
-      <a class="download"
-         href="${url}"
-         download="${file.name}">
-         ⬇️ Download & Buka Excel
-      </a>
-    `;
-
-    return;
-  }
-
-
-  preview.innerHTML = `
-    <p>Format file belum didukung untuk tampilan langsung.</p>
-  `;
-}
-
-
-function downloadFile(file) {
-
-  const url = URL.createObjectURL(file);
-
-  const a = document.createElement("a");
-
-  a.href = url;
-  a.download = file.name;
-
-  document.body.appendChild(a);
-
-  a.click();
-
-  document.body.removeChild(a);
-
-  URL.revokeObjectURL(url);
-}
-
-</script>
-
-</body>
-</html>
+  const supabaseClient =
+    supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
