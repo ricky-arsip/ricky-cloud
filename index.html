@@ -1,124 +1,315 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ricky Cloud</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background: #f4f7fb;
-      color: #222;
-    }
+<title>Ricky Cloud</title>
 
-    header {
-      background: #1769e0;
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f4f7fb;
+  color: #222;
+}
 
-    .container {
-      max-width: 900px;
-      margin: 30px auto;
-      padding: 20px;
-    }
+header {
+  background: #1769e0;
+  color: white;
+  padding: 25px;
+  text-align: center;
+}
 
-    .card {
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 3px 12px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
-    }
+.container {
+  max-width: 950px;
+  margin: 30px auto;
+  padding: 20px;
+}
 
-    h1, h2 {
-      margin-top: 0;
-    }
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
 
-    input[type="file"] {
-      margin: 15px 0;
-    }
+input[type="file"] {
+  margin: 15px 0;
+}
 
-    button {
-      background: #1769e0;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
+button {
+  background: #1769e0;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 5px;
+}
 
-    button:hover {
-      background: #0d4fa8;
-    }
+button:hover {
+  background: #0d4fa8;
+}
 
-    #fileList {
-      margin-top: 20px;
-    }
+.file {
+  padding: 18px;
+  border-bottom: 1px solid #ddd;
+}
 
-    .file {
-      padding: 15px;
-      border-bottom: 1px solid #ddd;
-    }
-  </style>
+.file-name {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.preview {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.preview img {
+  max-width: 100%;
+  max-height: 600px;
+}
+
+.preview iframe {
+  width: 100%;
+  height: 600px;
+  border: none;
+}
+
+.download {
+  display: inline-block;
+  background: #198754;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 7px;
+  text-decoration: none;
+  margin-top: 10px;
+}
+</style>
 </head>
 
 <body>
 
-  <header>
-    <h1>☁️ Ricky Cloud</h1>
-    <p>Penyimpanan Arsip & Dokumen Digital</p>
-  </header>
+<header>
+  <h1>☁️ Ricky Cloud</h1>
+  <p>Penyimpanan Arsip & Dokumen Digital</p>
+</header>
 
-  <div class="container">
+<div class="container">
 
-    <div class="card">
-      <h2>📤 Upload Dokumen</h2>
+  <div class="card">
+    <h2>📤 Upload Dokumen</h2>
 
-      <input type="file" id="fileInput">
+    <input type="file" id="fileInput"
+      accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif">
 
-      <br>
+    <br>
 
-      <button onclick="uploadFile()">Upload</button>
+    <button onclick="uploadFile()">Upload Dokumen</button>
+  </div>
+
+  <div class="card">
+    <h2>📁 Daftar Dokumen</h2>
+
+    <div id="fileList">
+      Belum ada dokumen.
     </div>
+  </div>
 
-    <div class="card">
-      <h2>📁 Daftar Dokumen</h2>
+  <div class="card" id="previewCard" style="display:none;">
 
-      <div id="fileList">
-        Belum ada dokumen.
-      </div>
-    </div>
+    <h2>👁️ Tampilan Dokumen</h2>
+
+    <div id="preview" class="preview"></div>
 
   </div>
 
-  <script>
-    function uploadFile() {
-      const input = document.getElementById("fileInput");
-      const fileList = document.getElementById("fileList");
+</div>
 
-      if (input.files.length === 0) {
-        alert("Silakan pilih file terlebih dahulu.");
-        return;
-      }
+<script>
 
-      const file = input.files[0];
+let dokumen = [];
 
-      const ukuran = (file.size / 1024).toFixed(2);
+function uploadFile() {
 
-      fileList.innerHTML = `
-        <div class="file">
-          📄 <strong>${file.name}</strong><br>
+  const input = document.getElementById("fileInput");
+
+  if (input.files.length === 0) {
+    alert("Silakan pilih file terlebih dahulu.");
+    return;
+  }
+
+  const file = input.files[0];
+
+  dokumen.push(file);
+
+  tampilkanDaftar();
+
+  bukaDokumen(file);
+
+  alert("Dokumen berhasil ditambahkan!");
+}
+
+
+function tampilkanDaftar() {
+
+  const fileList = document.getElementById("fileList");
+
+  fileList.innerHTML = "";
+
+  dokumen.forEach((file, index) => {
+
+    const ukuran = (file.size / 1024).toFixed(2);
+
+    fileList.innerHTML += `
+
+      <div class="file">
+
+        <div class="file-name">
+          📄 ${file.name}
+        </div>
+
+        <div>
           Ukuran: ${ukuran} KB
         </div>
-      `;
 
-      alert("File berhasil dipilih!");
-    }
-  </script>
+        <button onclick="bukaDokumen(dokumen[${index}])">
+          👁️ Buka
+        </button>
+
+        <button onclick="downloadFile(dokumen[${index}])">
+          ⬇️ Download
+        </button>
+
+      </div>
+
+    `;
+  });
+}
+
+
+function bukaDokumen(file) {
+
+  const previewCard = document.getElementById("previewCard");
+  const preview = document.getElementById("preview");
+
+  previewCard.style.display = "block";
+
+  preview.innerHTML = "";
+
+  const url = URL.createObjectURL(file);
+
+  const nama = file.name.toLowerCase();
+
+
+  // GAMBAR
+  if (
+    nama.endsWith(".jpg") ||
+    nama.endsWith(".jpeg") ||
+    nama.endsWith(".png") ||
+    nama.endsWith(".gif")
+  ) {
+
+    preview.innerHTML = `
+      <h3>🖼️ Gambar</h3>
+      <img src="${url}">
+    `;
+
+    return;
+  }
+
+
+  // PDF
+  if (nama.endsWith(".pdf")) {
+
+    preview.innerHTML = `
+      <h3>📕 PDF</h3>
+      <iframe src="${url}"></iframe>
+    `;
+
+    return;
+  }
+
+
+  // WORD
+  if (
+    nama.endsWith(".doc") ||
+    nama.endsWith(".docx")
+  ) {
+
+    preview.innerHTML = `
+      <h3>📝 Dokumen Word</h3>
+
+      <p>
+        File Word siap dibuka.
+      </p>
+
+      <a class="download"
+         href="${url}"
+         download="${file.name}">
+         ⬇️ Download & Buka Word
+      </a>
+    `;
+
+    return;
+  }
+
+
+  // EXCEL
+  if (
+    nama.endsWith(".xls") ||
+    nama.endsWith(".xlsx")
+  ) {
+
+    preview.innerHTML = `
+      <h3>📊 Dokumen Excel</h3>
+
+      <p>
+        File Excel siap dibuka.
+      </p>
+
+      <a class="download"
+         href="${url}"
+         download="${file.name}">
+         ⬇️ Download & Buka Excel
+      </a>
+    `;
+
+    return;
+  }
+
+
+  preview.innerHTML = `
+    <p>Format file belum didukung untuk tampilan langsung.</p>
+  `;
+}
+
+
+function downloadFile(file) {
+
+  const url = URL.createObjectURL(file);
+
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = file.name;
+
+  document.body.appendChild(a);
+
+  a.click();
+
+  document.body.removeChild(a);
+
+  URL.revokeObjectURL(url);
+}
+
+</script>
 
 </body>
 </html>
